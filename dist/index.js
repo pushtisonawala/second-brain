@@ -17,6 +17,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_js_1 = require("./db.js");
+const mid_1 = require("./middleware/mid");
 dotenv_1.default.config();
 const JWT_PASSWORD = process.env.JWT_PASSWORD;
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -33,7 +34,6 @@ app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).json({ error: "Signup failed", details: error.message });
     }
 }));
-// ✅ Signin
 app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     try {
@@ -51,11 +51,24 @@ app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).json({ error: "Error logging in", details: error.message });
     }
 }));
-// ✅ Content Route
-app.post("/api/v1/content", (req, res) => {
-    res.json({ message: "Content posted!" });
-});
-// ✅ Start server
+app.post("/api/v1/content", mid_1.mid, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const link = req.body.link;
+        const type = req.body.type;
+        yield db_js_1.contentModel.create({
+            link,
+            type,
+            //@ts-ignore
+            userId: req.userId,
+            tags: []
+        });
+        res.json("Content added");
+    }
+    catch (err) {
+        const error = err;
+        res.json("Content cant be added");
+    }
+}));
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -67,7 +80,7 @@ function startServer() {
         }
         catch (err) {
             const error = err;
-            console.error("❌ Error connecting to DB or starting server:", error.message);
+            console.error(" Error connecting to DB or starting server:", error.message);
         }
     });
 }
