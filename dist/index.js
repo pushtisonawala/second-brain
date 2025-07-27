@@ -74,7 +74,7 @@ app.get("/api/v1/content", mid_1.mid, (req, res) => __awaiter(void 0, void 0, vo
         const userId = req.userId;
         const content = yield db_1.contentModel.find({
             userId: userId
-        });
+        }).populate('userId', 'username');
         res.json({ content });
     }
     catch (err) {

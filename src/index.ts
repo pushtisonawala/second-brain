@@ -76,14 +76,16 @@ app.get("/api/v1/content",mid,async (req,res)=>{
   const userId=req.userId
   const content = await contentModel.find({
     userId:userId
-  })
-  res.json({content})
-}
-catch(err){
+  }).populate('userId', 'username');
+  
+  console.log("Content with populated user:", JSON.stringify(content, null, 2));
+  res.json({content});
+ }
+ catch(err){
   const error = err as Error;
   console.log("error getting content", error.message);
   res.status(500).json({ error: "Failed to get content", details: error.message });
-}
+ }
 })
 
 async function startServer() {
