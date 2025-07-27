@@ -16,7 +16,7 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const db_js_1 = require("./db.js");
+const db_1 = require("./db");
 const mid_1 = require("./middleware/mid");
 dotenv_1.default.config();
 const JWT_PASSWORD = process.env.JWT_PASSWORD;
@@ -26,7 +26,7 @@ app.use(express_1.default.json());
 app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     try {
-        const user = yield db_js_1.userModel.create({ username, password });
+        const user = yield db_1.userModel.create({ username, password });
         res.json({ message: "Signup successful", user });
     }
     catch (err) {
@@ -37,7 +37,7 @@ app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
 app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     try {
-        const existingUser = yield db_js_1.userModel.findOne({ username, password });
+        const existingUser = yield db_1.userModel.findOne({ username, password });
         if (!existingUser) {
             return res.status(401).json({ error: "Invalid credentials" });
         }
@@ -55,7 +55,7 @@ app.post("/api/v1/content", mid_1.mid, (req, res) => __awaiter(void 0, void 0, v
     try {
         const link = req.body.link;
         const type = req.body.type;
-        yield db_js_1.contentModel.create({
+        yield db_1.contentModel.create({
             link,
             type,
             //@ts-ignore
@@ -67,6 +67,20 @@ app.post("/api/v1/content", mid_1.mid, (req, res) => __awaiter(void 0, void 0, v
     catch (err) {
         const error = err;
         res.json("Content cant be added");
+    }
+}));
+app.get("/api/v1/content", mid_1.mid, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try { //@ts-ignore
+        const userId = req.userId;
+        const content = yield db_1.contentModel.find({
+            userId: userId
+        });
+        res.json({ content });
+    }
+    catch (err) {
+        const error = err;
+        console.log("error getting content", error.message);
+        res.status(500).json({ error: "Failed to get content", details: error.message });
     }
 }));
 function startServer() {

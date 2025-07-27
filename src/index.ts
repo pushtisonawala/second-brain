@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import { userModel,contentModel } from './db.js';
+import { userModel,contentModel } from './db';
 import {mid} from './middleware/mid'
 
 
@@ -71,6 +71,20 @@ catch(err){
 
 }
 });
+app.get("/api/v1/content",mid,async (req,res)=>{
+ try{ //@ts-ignore
+  const userId=req.userId
+  const content = await contentModel.find({
+    userId:userId
+  })
+  res.json({content})
+}
+catch(err){
+  const error = err as Error;
+  console.log("error getting content", error.message);
+  res.status(500).json({ error: "Failed to get content", details: error.message });
+}
+})
 
 async function startServer() {
   try {
